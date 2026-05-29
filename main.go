@@ -1,20 +1,31 @@
 package main
 
 import (
-	"log"
 	"fmt"
-	"time"
+	"os"
 )
 
 func main() {
-	fmt.Printf("%v: Stoplight Started\n", time.Now())
-	device := "wlx00c0cab5102c"
-	promiscuous := true
+	cmds := commands{make(map[string]func(cmd command) error)}
+	cmds.register("monitor", handlerMonitor)
 
-	err := openPcapReader(device, promiscuous)	
+	input := os.Args
+	fmt.Println(input)
+	if len(input) < 2 {
+		fmt.Fprint(os.Stderr, "Usage Error: stoplight <cmd name> [args...]")
+		os.Exit(1)
+	}
+
+	cmd := command{
+		Name: input[1],
+		Args: input[2:],
+	}
+
+	err := cmds.run(command{Name: cmd.Name, Args: cmd.Args})
 	if err != nil {
-		log.Fatal(err)
-	}	
+		fmt.Fprintf(os.Stderr, "Error running: %s: %v", cmd.Name, err)
+		os.Exit(1)
+	}
 
 }
 
