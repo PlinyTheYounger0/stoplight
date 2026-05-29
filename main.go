@@ -8,7 +8,7 @@ import (
 
 func main() {
 	fmt.Printf("%v: Stoplight Started\n", time.Now())
-	device := "wlp3s0"
+	device := "wlx00c0cab5102c"
 	promiscuous := true
 
 	err := openPcapReader(device, promiscuous)	
