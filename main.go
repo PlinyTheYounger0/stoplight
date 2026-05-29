@@ -2,10 +2,13 @@ package main
 
 import (
 	"log"
+	"fmt"
+	"time"
 )
 
 func main() {
-	device := "wlx00c0cab5102c"
+	fmt.Printf("%v: Stoplight Started\n", time.Now())
+	device := "wlp3s0"
 	promiscuous := true
 
 	err := openPcapReader(device, promiscuous)	
