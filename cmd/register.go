@@ -4,7 +4,9 @@ Copyright © 2026 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -18,10 +20,25 @@ var registerCmd = &cobra.Command{
 
 `,
 	Run: func(cmd *cobra.Command, args []string) {
+		name := args[0]
+		user, err := programState.DB.CreateUser(context.Background(), name)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error Creating User: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("User %s Successfully Created\n", user.Name)
+
+		if verbose {
+			fmt.Printf("User ID: %v\n", user.ID)
+			fmt.Printf("Created At: %v\n", user.CreatedAt)
+			fmt.Printf("Updated At: %v\n", user.UpdatedAt)
+			fmt.Printf("Username: %v\n", user.Name)
+		}
 	},
 }
 
 func init() {
+	registerCmd.Flags().BoolP("verbose", "v", false, "enable verbose output")
 	rootCmd.AddCommand(registerCmd)
 
 	// Here you will define your flags and configuration settings.

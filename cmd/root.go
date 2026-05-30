@@ -1,18 +1,22 @@
 /*
 Copyright © 2026 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 
+	"github.com/PlinyTheYounger0/stoplight/internal/cfg"
+	"github.com/PlinyTheYounger0/stoplight/internal/database"
+	_ "github.com/lib/pq"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 var cfgFile string
+var programState *cfg.State
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -24,9 +28,28 @@ examples and usage of using your application. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+
+	 PersistentPreRunE: func(cmd *cobra.Command, args []string) error { 
+
+		if programState == nil {
+
+			db, err := sql.Open("postgres", viper.GetString("db_url"))
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Error Establishing DB Connection: %v\n", err)
+				os.Exit(1)
+			}
+			defer db.Close()
+
+			dbQueries := database.New(db)
+
+			programState = &cfg.State{
+				DB: dbQueries,
+			}
+		}
+
+		return nil
+	 },
+
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -45,7 +68,7 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.stoplight.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/stoplight/internal/config/.stoplight.env)")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
@@ -58,13 +81,7 @@ func initConfig() {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// Find home directory.
-		home, err := os.UserHomeDir()
-		cobra.CheckErr(err)
-
-		// Search config in home directory with name ".stoplight" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigType("yaml")
+		viper.SetConfigType("json")
 		viper.SetConfigName(".stoplight")
 	}
 
