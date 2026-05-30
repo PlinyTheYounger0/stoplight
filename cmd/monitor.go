@@ -21,17 +21,18 @@ var promiscuous bool
 // monitorCmd represents the monitor command
 var monitorCmd = &cobra.Command{
 	Use:   "monitor",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Begin monitoring traffic on your network via your network interface",
+	Long: `The monitor command allows the user to begin a monioring session on their network interface.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	The monitoring session is started by the user who is currently logged in and will be logged as 
+	`,
+
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("monitor called")
 
-	fmt.Printf("%v: PCAP Reader Opened Successfully\n", time.Now())
+	if verbose {
+		fmt.Println("monitor called")
+		fmt.Printf("%v: PCAP Reader Opened Successfully\n", time.Now())
+	}
 
 	device := "wlx00c0cab5102c"
 
@@ -42,7 +43,9 @@ to quickly create a Cobra application.`,
 	}
 	defer handle.Close()
 
-	fmt.Printf("%v: PCAP Handler Opened Successfully\n", time.Now())
+	if verbose {
+		fmt.Printf("%v: PCAP Handler Opened Successfully\n", time.Now())
+	}
 
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
 	for packet := range packetSource.Packets() {
@@ -54,6 +57,7 @@ to quickly create a Cobra application.`,
 
 func init() {
 	monitorCmd.Flags().BoolP("promiscuous", "p", false, "enable promiscuous mode for the network interface")
+	monitorCmd.Flags().BoolP("verbose", "v", false, "enable verbose output")
 	rootCmd.AddCommand(monitorCmd)
 
 	// Here you will define your flags and configuration settings.
