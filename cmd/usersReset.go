@@ -1,11 +1,12 @@
 /*
 Copyright © 2026 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -21,7 +22,12 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("usersReset called")
+		err := programState.Queries.ResetUsers(context.Background())
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error Resetting Users DB: %v\n", err)
+		}
+
+		fmt.Println("Users DB Successfully Reset")
 	},
 }
 

@@ -1,9 +1,12 @@
 package cfg
 
 import (
+	"database/sql"
+
 	"github.com/PlinyTheYounger0/stoplight/internal/database"
 )
 
 type State struct {
-	DB *database.Queries
+	Queries *database.Queries
+	DB *sql.DB
 }

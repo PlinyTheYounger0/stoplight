@@ -15,7 +15,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var verbose bool
 var promiscuous bool
 
 // monitorCmd represents the monitor command
@@ -57,7 +56,6 @@ var monitorCmd = &cobra.Command{
 
 func init() {
 	monitorCmd.Flags().BoolP("promiscuous", "p", false, "enable promiscuous mode for the network interface")
-	monitorCmd.Flags().BoolP("verbose", "v", false, "enable verbose output")
 	rootCmd.AddCommand(monitorCmd)
 
 	// Here you will define your flags and configuration settings.

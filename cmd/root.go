@@ -16,6 +16,8 @@ import (
 )
 
 var cfgFile string
+var verbose bool
+
 var programState *cfg.State
 
 // rootCmd represents the base command when called without any subcommands
@@ -35,20 +37,33 @@ to quickly create a Cobra application.`,
 
 			db, err := sql.Open("postgres", viper.GetString("db_url"))
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error Establishing DB Connection: %v\n", err)
-				os.Exit(1)
+				return fmt.Errorf("Error Establishing DB Connection: %v\n", err.Error())
 			}
-			defer db.Close()
+
+			if verbose {
+				fmt.Printf("Successfully Connected to DB: %s\n", viper.GetString("db_url"))
+			}
 
 			dbQueries := database.New(db)
 
 			programState = &cfg.State{
-				DB: dbQueries,
+				Queries: dbQueries,
+				DB: db,
 			}
 		}
 
 		return nil
 	 },
+
+	PersistentPostRunE: func(cmd *cobra.Command, args []string) error {
+		if programState != nil && programState.DB != nil {
+			if err := programState.DB.Close(); err != nil {
+				return fmt.Errorf("Error Closing DB Connection: %v\n", err.Error())
+			}
+		}
+
+		return nil
+	}, 
 
 }
 
@@ -68,6 +83,7 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose output")
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/stoplight/internal/config/.stoplight.env)")
 
 	// Cobra also supports local flags, which will only run
@@ -83,12 +99,15 @@ func initConfig() {
 	} else {
 		viper.SetConfigType("json")
 		viper.SetConfigName(".stoplight")
+		viper.AddConfigPath("$HOME/stoplight/internal/cfg/")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+		if verbose {
+			fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+		}
 	}
 }

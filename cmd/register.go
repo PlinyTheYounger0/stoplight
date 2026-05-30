@@ -21,7 +21,7 @@ var registerCmd = &cobra.Command{
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		name := args[0]
-		user, err := programState.DB.CreateUser(context.Background(), name)
+		user, err := programState.Queries.CreateUser(context.Background(), name)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error Creating User: %v\n", err)
 			os.Exit(1)
@@ -38,7 +38,6 @@ var registerCmd = &cobra.Command{
 }
 
 func init() {
-	registerCmd.Flags().BoolP("verbose", "v", false, "enable verbose output")
 	rootCmd.AddCommand(registerCmd)
 
 	// Here you will define your flags and configuration settings.
