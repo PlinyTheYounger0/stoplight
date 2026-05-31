@@ -23,13 +23,11 @@ var programState *cfg.State
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "stoplight",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "A Network Traffic Analyzer and War Driving Tool",
+	Long: ` Stoplight is a security tool that allows for the monitoring of packets on a network.
+	For Blue Team purposes Stoplight acts as a way to monitor all devices on the network and highlight unusual traffic.
+	For Red Team purposes Stoplight allows for advanced wardriving functionality with robust export features.
+	`,
 
 	 PersistentPreRunE: func(cmd *cobra.Command, args []string) error { 
 

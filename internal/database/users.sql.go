@@ -51,7 +51,8 @@ func (q *Queries) GetUserByName(ctx context.Context, name string) (User, error) 
 }
 
 const resetUsers = `-- name: ResetUsers :exec
-DELETE FROM users
+DELETE 
+FROM users
 `
 
 func (q *Queries) ResetUsers(ctx context.Context) error {
