@@ -25,6 +25,9 @@ var resetCmd = &cobra.Command{
 			if err != nil {
 				return fmt.Errorf("Error Resetting Database: %w\n", err)
 			}
+
+			fmt.Println("Database Reset Successfully")
+			return nil
 		}
 
 		resets := map[string]func(context.Context) error {
@@ -40,6 +43,8 @@ var resetCmd = &cobra.Command{
 			if err := fn(context.Background()); err != nil {
 				return fmt.Errorf("Error Resetting %s: %w\n", table, err)
 			}
+
+			fmt.Printf("Successfully Reset Table %s\n", table)
 
 		}
 

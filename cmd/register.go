@@ -8,45 +8,50 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"os"
 
+	"github.com/PlinyTheYounger0/stoplight/internal/cfg"
 	"github.com/spf13/cobra"
 )
 
 // registerCmd represents the register command
 var registerCmd = &cobra.Command{
-	Use:   "register",
+	Use:   "register [username]",
 	Short: "Register a new user",
 	Args: cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 	Long: `Registers the user in the database and logs the user in as the current user.
 
 `,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		name := args[0]
 
 		user, err := programState.Queries.GetUserByName(context.Background(), name)
-		if errors.Is(err, sql.ErrNoRows) {
-			newUser, err := programState.Queries.CreateUser(context.Background(), name)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error Creating User: %v\n", err)
-				os.Exit(1)
+		if err != nil {
+
+			if errors.Is(err, sql.ErrNoRows) {
+				newUser, err := programState.Queries.CreateUser(context.Background(), name)
+				if err != nil {
+					return fmt.Errorf("Error Creating User %s: %v\n", name, err)
+				}
+				fmt.Printf("User %s Successfully Created\n", newUser.Name)
+				if verbose {
+					fmt.Printf("User ID: %v\n", user.ID)
+					fmt.Printf("Created At: %v\n", user.CreatedAt)
+					fmt.Printf("Updated At: %v\n", user.UpdatedAt)
+					fmt.Printf("Username: %v\n", user.Name)
+				}
+
+				err = cfg.SetCurrentUser(name)
+				if err != nil {
+					return err
+				}
+
+				return nil
 			}
 
-			fmt.Printf("User %s Successfully Created\n", newUser.Name)
-
-			if verbose {
-				fmt.Printf("User ID: %v\n", user.ID)
-				fmt.Printf("Created At: %v\n", user.CreatedAt)
-				fmt.Printf("Updated At: %v\n", user.UpdatedAt)
-				fmt.Printf("Username: %v\n", user.Name)
-			}
-		} else if err != nil {
-			fmt.Fprintf(os.Stderr, "Error Validating User Before Creation: %v\n", err)
-			os.Exit(1)
-		} else {
-			fmt.Fprint(os.Stderr, "User is already registered. Please choose a different name.\n")
-			os.Exit(1)
+			return fmt.Errorf("Error Validating User %s Before Creation: %w\n", name, err)
 		}
+
+		return fmt.Errorf("User %s is already registered. Please choose a different name.\n", name)
 
 	},
 }
